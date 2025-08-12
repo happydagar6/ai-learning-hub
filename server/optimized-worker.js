@@ -121,7 +121,7 @@ class OptimizedDocumentProcessor {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-        const response = await fetch("http://localhost:8000/update-status", {
+  const response = await fetch(`${process.env.DOCUMENT_SERVER_URL}/update-status`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(statusData),
@@ -1065,7 +1065,7 @@ class OptimizedDocumentProcessor {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 5000)
 
-        const response = await fetch("http://localhost:8000/update-status", {
+  const response = await fetch(`${process.env.DOCUMENT_SERVER_URL}/update-status`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ jobId, status, progress, error }),
@@ -1352,9 +1352,9 @@ const worker = new Worker(
   },
   {
     concurrency: 2, // Increased concurrency with caching
-    connection: {
-      host: "localhost",
-      port: 6379,
+    connection: process.env.REDIS_URL || {
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT,
       retryDelayOnFailover: 100,
       enableReadyCheck: false,
       maxRetriesPerRequest: 3,

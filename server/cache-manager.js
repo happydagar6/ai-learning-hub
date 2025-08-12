@@ -4,8 +4,13 @@ import crypto from 'crypto'
 class CacheManager {
   constructor() {
     this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
+      // Use REDIS_URL if available, otherwise fallback to host/port (no localhost default)
+      ...(process.env.REDIS_URL
+        ? { url: process.env.REDIS_URL }
+        : {
+            host: process.env.REDIS_HOST,
+            port: process.env.REDIS_PORT,
+          }),
       retryDelayOnFailover: 100,
       enableReadyCheck: false,
       maxRetriesPerRequest: 3,

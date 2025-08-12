@@ -39,8 +39,9 @@ class OptimizedDocumentProcessor {
       maxRetries: 3,
     })
 
-    this.client = new QdrantClient({ 
-      url: `http://localhost:6333`,
+    this.client = new QdrantClient({
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY,
       timeout: 30000 // 30 second timeout for Qdrant operations
     })
     this.cache = new CacheManager()

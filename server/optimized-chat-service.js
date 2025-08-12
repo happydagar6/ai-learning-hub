@@ -20,7 +20,10 @@ class OptimizedChatService {
       maxRetries: 3,
     })
 
-    this.qdrantClient = new QdrantClient({ url: "http://localhost:6333" })
+    this.qdrantClient = new QdrantClient({
+      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY
+    })
     
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,

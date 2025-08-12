@@ -10,7 +10,7 @@
     "dev:worker": "node --watch worker.js",
     "dev:optimized": "node --watch optimized-worker.js",
     "monitor": "node --watch performance-monitor.js",
-    "start": "node enhanced-index.js",
+    "start": "concurrently \"node enhanced-index.js\" \"node optimized-worker.js\"",
     "start:original": "node index.js",
     "start:optimized": "node optimized-worker.js",
     "enhanced": "node enhanced-index.js"
@@ -20,6 +20,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
+    "concurrently": "^8.2.2",
     "@langchain/community": "^0.3.48",
     "@langchain/core": "^0.3.62",
     "@langchain/openai": "^0.5.18",

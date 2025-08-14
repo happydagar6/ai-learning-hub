@@ -58,13 +58,15 @@ const supabase = createClient(
 
 // Redis Queue setup - Updated for free hosting
 const queue = new Queue("file-upload-queue", {
-  connection: process.env.REDIS_URL ? process.env.REDIS_URL : {
-    host: "localhost",
-    port: 6379,
-    retryDelayOnFailover: 100,
-    enableReadyCheck: false,
-    maxRetriesPerRequest: 3,
-  },
+  connection: process.env.REDIS_URL
+    ? process.env.REDIS_URL
+    : {
+        host: process.env.REDIS_HOST,
+        port: process.env.REDIS_PORT,
+        retryDelayOnFailover: 100,
+        enableReadyCheck: false,
+        maxRetriesPerRequest: 3,
+      },
   defaultJobOptions: {
     attempts: 3,
     backoff: {

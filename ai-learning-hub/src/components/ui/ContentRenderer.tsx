@@ -39,9 +39,9 @@ const ContentRenderer: React.FC<ContentRendererProps> = ({ content, className = 
   }
 
   return (
-    <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-none antialiased-text prose-slate dark:prose-invert flashcard-content ${className}`}>
+    <div className={`prose prose-sm sm:prose-base lg:prose-lg max-w-full w-full antialiased-text prose-slate dark:prose-invert flashcard-content ${className}`} style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
       <div 
-        className="leading-relaxed text-foreground"
+        className="leading-relaxed text-foreground w-full max-w-full overflow-x-auto px-2 sm:px-0"
         dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }} 
       />
     </div>

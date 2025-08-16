@@ -34,6 +34,10 @@ console.log("✅ All environment variables validated successfully")
 
 // Initialize services
 const app = express()
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 const PORT = process.env.PORT || 8000
 
 // Initialize optimized services
@@ -58,15 +62,13 @@ const supabase = createClient(
 
 // Redis Queue setup - Updated for free hosting
 const queue = new Queue("file-upload-queue", {
-  connection: process.env.REDIS_URL
-    ? process.env.REDIS_URL
-    : {
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
-        retryDelayOnFailover: 100,
-        enableReadyCheck: false,
-        maxRetriesPerRequest: 3,
-      },
+  connection: {
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    retryDelayOnFailover: 100,
+    enableReadyCheck: false,
+    maxRetriesPerRequest: 3,
+  },
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -715,7 +717,7 @@ app.get("/document-content", async (req, res) => {
       const { QdrantClient } = await import("@qdrant/js-client-rest")
       const { OpenAIEmbeddings } = await import("@langchain/openai")
 
-      const client = new QdrantClient({ url: "http://localhost:6333" })
+  const client = new QdrantClient({ url: process.env.QDRANT_URL || "http://qdrant:6333" })
       const embeddings = new OpenAIEmbeddings({
         model: "text-embedding-3-small",
         apiKey: process.env.OPENAI_API_KEY,
@@ -730,6 +732,8 @@ app.get("/document-content", async (req, res) => {
       // We'll use a broad search and then filter by metadata
       const searchResults = await vectorStore.similaritySearch("", 100) // Get many results
       
+    // Debug: Print all metadata for returned chunks
+    console.log("Qdrant searchResults metadata:", searchResults.map(doc => doc.metadata));
       // Filter results to only include chunks from this specific document
       // Use the documentId from the database record (string) for metadata filtering
       const documentIdForSearch = documentData.documentId || documentData.id.toString()
@@ -1028,7 +1032,7 @@ app.get("/debug/vector-status", async (req, res) => {
     const { QdrantClient } = await import("@qdrant/js-client-rest")
     const { OpenAIEmbeddings } = await import("@langchain/openai")
 
-    const client = new QdrantClient({ url: "http://localhost:6333" })
+    const client = new QdrantClient({ url: process.env.QDRANT_URL || "http://qdrant:6333" })
     const embeddings = new OpenAIEmbeddings({
       model: "text-embedding-3-small",
       apiKey: process.env.OPENAI_API_KEY,

@@ -173,31 +173,32 @@ export default function EnhancedMindMapPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-6">
+    <div className="min-h-screen bg-background w-full max-w-full overflow-x-auto">
+      <div className="max-w-full w-full mx-auto p-2 sm:p-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-6 w-full">
           <Button 
             variant="outline" 
             onClick={() => router.push('/dashboard/study-plan')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 w-full sm:w-auto"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Study Plans
           </Button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <h1 className="text-2xl font-bold">Enhanced Mind Map</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">Enhanced Mind Map</h1>
           </div>
         </div>
-
         {/* Enhanced Study Plan Viewer */}
-        <EnhancedStudyPlanViewer 
-          studyPlan={studyPlanData} 
-          studyPlanId={studyPlanId} 
-        />
+        <div className="w-full max-w-full overflow-x-auto">
+          <EnhancedStudyPlanViewer 
+            studyPlan={studyPlanData} 
+            studyPlanId={studyPlanId} 
+          />
+        </div>
       </div>
     </div>
   );

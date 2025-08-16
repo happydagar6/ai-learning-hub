@@ -28,7 +28,7 @@ export const GET = requireAuth(async (request: NextRequest, user: any) => {
 
     // First check if there's a processing job running on the Node.js server
     try {
-      const nodeServerResponse = await fetch(`http://localhost:8000/status/${jobId}`)
+  const nodeServerResponse = await fetch(`${process.env.DOCUMENT_SERVER_URL}/status/${jobId}`)
       if (nodeServerResponse.ok) {
         const nodeStatus = await nodeServerResponse.json()
         if (nodeStatus.status && nodeStatus.status !== 'not_found') {

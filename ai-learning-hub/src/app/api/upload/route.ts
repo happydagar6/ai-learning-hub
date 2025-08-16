@@ -195,7 +195,7 @@ export const POST = requireAuth(async (request: NextRequest, user: any) => {
     // Trigger processing on the Node.js server
     try {
       // Instead of uploading again, trigger processing of the existing document
-      const processingResponse = await fetch('http://localhost:8000/process-existing', {
+  const processingResponse = await fetch(`${process.env.DOCUMENT_SERVER_URL}/process-existing`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

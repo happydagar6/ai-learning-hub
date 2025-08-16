@@ -3,7 +3,7 @@
 import type React from "react"
 import { useEffect, useState, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Bot, Loader2, MessageSquare, Send, User, Copy, Check, Download } from "lucide-react"
+import { Bot, Loader2, MessageSquare, Send, User, Copy, Check, Download, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -315,7 +315,8 @@ const QAInterface: React.FC<QAInterfaceProps> = ({ userId, selectedDocument }) =
         controller.abort()
       }, 200000) // 200 second timeout (3 minutes 20 seconds) - longer than server timeout
 
-      const response = await fetch(`http://localhost:8000/chat?${queryParams.toString()}`, {
+  // Direct browser fetch to backend API
+  const response = await fetch(`${process.env.NEXT_PUBLIC_DOCUMENT_SERVER_URL}/chat?${queryParams.toString()}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -466,109 +467,118 @@ The server returned an unexpected response format. Please try again or contact s
   }
 
   return (
-    <div className="flex flex-col h-full w-full max-w-6xl mx-auto">
+    <div className="flex flex-col h-full w-full max-w-6xl mx-auto px-2 sm:px-4">
       {/* Chat Interface */}
-      <Card className="flex-1 flex flex-col shadow-lg border-border/50 min-h-0 h-full bg-card/50 backdrop-blur-sm">
-        {/* Chat Header */}
-        <CardHeader className="pb-4 border-b flex-shrink-0 bg-background/80 backdrop-blur-sm">
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-3 text-xl">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <MessageSquare className="h-6 w-6 text-primary" />
-              </div>
-              AI Document Assistant
-            </CardTitle>
+      <Card className="flex-1 flex flex-col shadow-lg border-border/50 min-h-0 h-full bg-card/50 backdrop-blur-sm w-full max-w-full overflow-hidden">
+        {/* Chat Header - Fixed Container */}
+        <CardHeader className="pb-3 sm:pb-4 border-b flex-shrink-0 bg-background/80 backdrop-blur-sm px-3 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 w-full min-w-0">
+            <div className="flex-1 min-w-0">
+              <CardTitle className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl truncate">
+                <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                  <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                </div>
+                <span className="truncate">AI Document Assistant</span>
+              </CardTitle>
+              
+              <CardDescription className="mt-2 sm:mt-3 text-sm sm:text-base">
+                {selectedDocument ? (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-emerald-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0"></div>
+                      <span className="text-xs sm:text-sm">Chatting with:</span>
+                      <strong className="truncate text-xs sm:text-sm">{selectedDocument.originalName}</strong>
+                    </div>
+                    <Badge variant="outline" className="text-xs self-start sm:self-auto">
+                      {selectedDocument.subject}
+                    </Badge>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 text-amber-600">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0"></div>
+                    <span className="text-xs sm:text-sm">No specific document selected - searching all documents</span>
+                  </div>
+                )}
+                {showRestoredIndicator && (
+                  <span className="block text-xs sm:text-sm text-emerald-600 mt-1 animate-fade-in">
+                    💾 Conversation restored from previous session
+                  </span>
+                )}
+              </CardDescription>
+            </div>
+            
+            {/* Clear Conversation Button - Properly Contained */}
             {messages.length > 0 && (
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="text-sm px-3 py-1">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 flex-shrink-0">
+                <Badge variant="secondary" className="text-xs sm:text-sm px-2 sm:px-3 py-1 self-start sm:self-auto">
                   {messages.filter((m) => m.role === "user").length} questions asked
                 </Badge>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   onClick={clearChat} 
-                  className="text-sm hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4 hover:bg-destructive hover:text-destructive-foreground transition-colors whitespace-nowrap flex-shrink-0 w-full sm:w-auto"
                 >
-                  Clear Conversation
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                  Clear Chat
                 </Button>
               </div>
             )}
           </div>
-          <CardDescription className="mt-3 text-base">
-            {selectedDocument ? (
-              <div className="flex items-center gap-2 text-emerald-600">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                Chatting with: <strong>{selectedDocument.originalName}</strong>
-                <Badge variant="outline" className="text-xs">
-                  {selectedDocument.subject}
-                </Badge>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-amber-600">
-                <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                No specific document selected - searching all documents
-              </div>
-            )}
-            {showRestoredIndicator && (
-              <span className="block text-sm text-emerald-600 mt-1 animate-fade-in">
-                💾 Conversation restored from previous session
-              </span>
-            )}
-          </CardDescription>
         </CardHeader>
 
-        {/* Messages Area */}
-        <CardContent className="flex-1 p-6 overflow-hidden min-h-0">
-          <div className="h-full flex flex-col min-h-0">
-            <ScrollArea ref={scrollAreaRef} className="flex-1 pr-4 min-h-0 mb-4">
-              <div className="space-y-6 pb-8">
+        {/* Messages Area - Proper Container */}
+        <CardContent className="flex-1 p-3 sm:p-6 overflow-hidden min-h-0">
+          <div className="h-full flex flex-col min-h-0 w-full">
+            <ScrollArea ref={scrollAreaRef} className="flex-1 min-h-0 mb-3 sm:mb-4 w-full pr-2 sm:pr-4">
+              <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-8 w-full">
                 {!isHydrated ? (
-                  <div className="text-center py-16">
-                    <div className="p-4 bg-primary/10 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                      <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                  <div className="text-center py-12 sm:py-16">
+                    <div className="p-3 sm:p-4 bg-primary/10 rounded-full w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 flex items-center justify-center">
+                      <Loader2 className="h-10 w-10 sm:h-12 sm:w-12 text-primary animate-spin" />
                     </div>
-                    <h3 className="text-xl font-medium text-foreground mb-3">Loading your conversations...</h3>
+                    <h3 className="text-lg sm:text-xl font-medium text-foreground mb-2 sm:mb-3">Loading your conversations...</h3>
                   </div>
                 ) : messages.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="p-4 bg-primary/10 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-                      <MessageSquare className="h-12 w-12 text-primary" />
+                  <div className="text-center py-12 sm:py-16">
+                    <div className="p-3 sm:p-4 bg-primary/10 rounded-full w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 flex items-center justify-center">
+                      <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-primary" />
                     </div>
-                    <h3 className="text-xl font-medium text-foreground mb-3">Ready to chat with your documents</h3>
-                    <p className="text-muted-foreground max-w-lg mx-auto text-base leading-relaxed">
+                    <h3 className="text-lg sm:text-xl font-medium text-foreground mb-2 sm:mb-3">Ready to chat with your documents</h3>
+                    <p className="text-muted-foreground max-w-lg mx-auto text-sm sm:text-base leading-relaxed px-4">
                       Start by asking a question about your uploaded documents. I&apos;ll provide detailed, well-structured
                       answers based on the content.
                     </p>
                   </div>
                 ) : (
                   messages.map((msg, idx) => (
-                    <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} mb-6`}>
+                    <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} mb-4 sm:mb-6`}>
                       <Card
-                        className={`max-w-[85%] min-w-[200px] shadow-lg border ${
+                        className={`w-full max-w-[95%] sm:max-w-[85%] min-w-[120px] shadow-lg border overflow-hidden ${
                           msg.role === "user" 
                             ? "bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700" 
                             : "bg-card dark:bg-card border-border dark:border-border"
                         }`}
                       >
-                        <CardContent className="p-4">
-                          {/* Action Buttons for Assistant Messages - Top Right */}
+                        <CardContent className="p-3 sm:p-4">
+                          {/* Action Buttons for Assistant Messages - Properly Contained */}
                           {msg.role === "assistant" && (
-                            <div className="flex items-center justify-end space-x-1 mb-3">
+                            <div className="flex items-center justify-end space-x-1 mb-2 sm:mb-3 flex-wrap gap-1">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleCopy(msg.content || "", idx)}
-                                className="text-xs h-7 px-2"
+                                className="text-xs h-6 sm:h-7 px-2 flex-shrink-0"
                               >
                                 {copiedIndex === idx ? (
                                   <>
                                     <Check className="h-3 w-3 mr-1" />
-                                    <span className="hidden sm:inline">Copied</span>
+                                    <span className="hidden xs:inline">Copied</span>
                                   </>
                                 ) : (
                                   <>
                                     <Copy className="h-3 w-3 mr-1" />
-                                    <span className="hidden sm:inline">Copy</span>
+                                    <span className="hidden xs:inline">Copy</span>
                                   </>
                                 )}
                               </Button>
@@ -577,58 +587,58 @@ The server returned an unexpected response format. Please try again or contact s
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDownload(msg.content || "", idx)}
-                                className="text-xs h-7 px-2"
+                                className="text-xs h-6 sm:h-7 px-2 flex-shrink-0"
                               >
                                 <Download className="h-3 w-3 mr-1" />
-                                <span className="hidden sm:inline">Download</span>
+                                <span className="hidden xs:inline">Download</span>
                               </Button>
 
                               {msg.contextSections && (
-                                <Badge variant="outline" className="text-xs h-7">
+                                <Badge variant="outline" className="text-xs h-6 sm:h-7 flex-shrink-0">
                                   {msg.contextSections} sources
                                 </Badge>
                               )}
                             </div>
                           )}
 
-                          <div className="flex items-start space-x-3">
+                          <div className="flex items-start space-x-2 sm:space-x-3">
                             <div
-                              className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                              className={`flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
                                 msg.role === "user" 
                                   ? "bg-white/20 text-white" 
                                   : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
                               }`}
                             >
                               {msg.role === "user" ? (
-                                <User className="h-4 w-4 text-white" />
+                                <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                               ) : (
-                                <Bot className="h-4 w-4" />
+                                <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
                               )}
                             </div>
 
                             <div className="flex-1 min-w-0 overflow-hidden">
                               {msg.role === "assistant" ? (
-                                <div className="space-y-3 max-h-64 overflow-y-auto">
+                                <div className="space-y-2 sm:space-y-3 max-h-64 overflow-y-auto">
                                   <div
-                                    className="prose prose-sm max-w-none text-foreground break-words"
+                                    className="prose prose-sm sm:prose-base max-w-none text-foreground break-words text-sm sm:text-base leading-relaxed"
                                     dangerouslySetInnerHTML={{
-                                      __html: `<p class="mb-3 leading-relaxed text-foreground">${formatResponse(
+                                      __html: `<p class="mb-3 leading-relaxed text-foreground text-sm sm:text-base">${formatResponse(
                                         typeof msg.content === "string" ? msg.content : msg.content?.content || "",
                                       )}</p>`,
                                     }}
                                   />
 
-                                  {/* Page References */}
+                                  {/* Page References - Mobile Optimized */}
                                   {msg.pageReferences && msg.pageReferences.length > 0 && (
-                                    <div className="mt-4 p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
-                                      <h4 className="text-sm font-medium text-foreground dark:text-foreground mb-2">📄 Sources:</h4>
-                                      <div className="space-y-2">
+                                    <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-muted dark:bg-muted rounded-lg border border-border dark:border-border">
+                                      <h4 className="text-xs sm:text-sm font-medium text-foreground dark:text-foreground mb-2">📄 Sources:</h4>
+                                      <div className="space-y-1 sm:space-y-2">
                                         {msg.pageReferences.map((ref, idx) => (
-                                          <div key={idx} className="flex items-start space-x-2 text-sm">
-                                            <Badge variant="outline" className="text-xs">
+                                          <div key={idx} className="flex flex-col sm:flex-row sm:items-start space-y-1 sm:space-y-0 sm:space-x-2 text-xs sm:text-sm">
+                                            <Badge variant="outline" className="text-xs self-start sm:self-auto flex-shrink-0">
                                               Page {ref.pageNumber}
                                             </Badge>
-                                            <span className="text-muted-foreground dark:text-muted-foreground flex-1">
+                                            <span className="text-muted-foreground dark:text-muted-foreground flex-1 break-words">
                                               {ref.source} - {ref.preview}
                                             </span>
                                           </div>
@@ -638,7 +648,7 @@ The server returned an unexpected response format. Please try again or contact s
                                   )}
                                 </div>
                               ) : (
-                                <div className={`break-words whitespace-pre-wrap leading-relaxed ${
+                                <div className={`break-words whitespace-pre-wrap leading-relaxed text-sm sm:text-base ${
                                   msg.role === "user" ? "text-white" : "text-foreground dark:text-foreground"
                                 }`}>
                                   {typeof msg.content === "string" ? msg.content : msg.content?.content}
@@ -646,7 +656,7 @@ The server returned an unexpected response format. Please try again or contact s
                               )}
 
                               <div
-                                className={`text-xs mt-3 ${
+                                className={`text-xs mt-2 sm:mt-3 ${
                                   msg.role === "user" 
                                     ? "text-white/70" 
                                     : "text-muted-foreground dark:text-muted-foreground"
@@ -671,17 +681,17 @@ The server returned an unexpected response format. Please try again or contact s
 
                 {loading && (
                   <div className="flex justify-start">
-                    <Card className="bg-card border-border shadow-lg">
-                      <CardContent className="p-6">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Bot className="h-5 w-5 text-primary" />
+                    <Card className="bg-card border-border shadow-lg max-w-[95%] sm:max-w-[85%]">
+                      <CardContent className="p-4 sm:p-6">
+                        <div className="flex items-center space-x-3 sm:space-x-4">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                           </div>
-                          <div className="flex items-center space-x-3">
-                            <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                            <div className="space-y-1">
-                              <span className="text-foreground text-base">AI is analyzing your question...</span>
-                              <div className="text-sm text-muted-foreground">
+                          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                            <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin text-primary flex-shrink-0" />
+                            <div className="space-y-1 min-w-0">
+                              <span className="text-foreground text-sm sm:text-base">AI is analyzing your question...</span>
+                              <div className="text-xs sm:text-sm text-muted-foreground">
                                 🔍 Searching documents • 🧠 Processing context • ✨ Generating response
                               </div>
                               <div className="text-xs text-muted-foreground opacity-70">
@@ -700,84 +710,84 @@ The server returned an unexpected response format. Please try again or contact s
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="border-t border-border pt-6 pb-6 space-y-4 flex-shrink-0">
-              {/* Response Mode Controls */}
+            <div className="border-t border-border pt-4 sm:pt-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4 flex-shrink-0">
+              {/* Response Mode Controls - Mobile Optimized */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground dark:text-foreground">Response Mode</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col xs:flex-row gap-2">
                       <Button
                         variant={responseMode === 'standard' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setResponseMode('standard')}
-                        className="h-8 text-xs"
+                        className="h-9 sm:h-8 text-xs sm:text-xs px-3 sm:px-2 whitespace-nowrap min-w-0 flex-shrink-0"
                       >
-                        📝 Standard
+                        <span className="truncate">📝 Standard</span>
                       </Button>
                       <Button
                         variant={responseMode === 'professional' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setResponseMode('professional')}
-                        className="h-8 text-xs"
+                        className="h-9 sm:h-8 text-xs sm:text-xs px-3 sm:px-2 whitespace-nowrap min-w-0 flex-shrink-0"
                       >
-                        🏢 Professional
+                        <span className="truncate">🏢 Professional</span>
                       </Button>
                     </div>
                   </div>
                   
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground dark:text-foreground">Response Depth</label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col xs:flex-row gap-2">
                       <Button
                         variant={responseDepth === 'quick' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setResponseDepth('quick')}
-                        className="h-8 text-xs"
+                        className="h-9 sm:h-8 text-xs sm:text-xs px-3 sm:px-2 whitespace-nowrap min-w-0 flex-shrink-0"
                         disabled={responseMode === 'professional'}
                       >
-                        ⚡ Quick
+                        <span className="truncate">⚡ Quick</span>
                       </Button>
                       <Button
                         variant={responseDepth === 'standard' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setResponseDepth('standard')}
-                        className="h-8 text-xs"
+                        className="h-9 sm:h-8 text-xs sm:text-xs px-3 sm:px-2 whitespace-nowrap min-w-0 flex-shrink-0"
                       >
-                        📊 Standard
+                        <span className="truncate">📊 Standard</span>
                       </Button>
                       <Button
                         variant={responseDepth === 'professional' ? 'default' : 'outline'}
                         size="sm"
                         onClick={() => setResponseDepth('professional')}
-                        className="h-8 text-xs"
+                        className="h-9 sm:h-8 text-xs sm:text-xs px-3 sm:px-2 whitespace-nowrap min-w-0 flex-shrink-0"
                         disabled={responseMode !== 'professional'}
                       >
-                        🔍 Deep
+                        <span className="truncate">🔍 Deep</span>
                       </Button>
                     </div>
                   </div>
                 </div>
                 
-                {/* Mode Description - Redesigned without box */}
-                <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground">
+                {/* Mode Description - Mobile Optimized */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-center space-y-1 sm:space-y-0 sm:space-x-2 text-xs text-muted-foreground px-2">
                   {responseMode === 'standard' ? (
                     <>
-                      <div className="flex items-center space-x-1 bg-blue-100/50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
+                      <div className="flex items-center justify-center sm:justify-start space-x-1 bg-blue-100/50 dark:bg-blue-900/20 px-2 py-1 rounded-full">
                         <span className="text-blue-600 dark:text-blue-400">📝</span>
-                        <span className="font-medium text-blue-700 dark:text-blue-300">Standard Mode</span>
+                        <span className="font-medium text-blue-700 dark:text-blue-300 text-xs">Standard Mode</span>
                       </div>
-                      <span className="text-muted-foreground">→</span>
-                      <span className="text-foreground">Direct answers with clear references</span>
+                      <span className="text-muted-foreground hidden sm:inline">→</span>
+                      <span className="text-foreground text-center sm:text-left text-xs">Direct answers with clear references</span>
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center space-x-1 bg-purple-100/50 dark:bg-purple-900/20 px-2 py-1 rounded-full">
+                      <div className="flex items-center justify-center sm:justify-start space-x-1 bg-purple-100/50 dark:bg-purple-900/20 px-2 py-1 rounded-full">
                         <span className="text-purple-600 dark:text-purple-400">🏢</span>
-                        <span className="font-medium text-purple-700 dark:text-purple-300">Professional Mode</span>
+                        <span className="font-medium text-purple-700 dark:text-purple-300 text-xs">Professional Mode</span>
                       </div>
-                      <span className="text-muted-foreground">→</span>
-                      <span className="text-foreground">Enhanced analysis with industry insights</span>
+                      <span className="text-muted-foreground hidden sm:inline">→</span>
+                      <span className="text-foreground text-center sm:text-left text-xs">Enhanced analysis with industry insights</span>
                     </>
                   )}
                 </div>
@@ -792,10 +802,10 @@ The server returned an unexpected response format. Please try again or contact s
                 className="flex justify-center"
               />
               
-              <div className="flex space-x-4">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                 <input
                   ref={inputRef}
-                  className="flex-1 h-10 text-sm bg-background dark:bg-background text-foreground dark:text-foreground border-2 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                  className="flex-1 h-11 sm:h-10 text-sm sm:text-sm bg-background dark:bg-background text-foreground dark:text-foreground border-2 border-border dark:border-border focus:border-blue-500 dark:focus:border-blue-400 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   type="text"
                   placeholder={isHydrated ? "Ask a question about your documents... 🎤 or use voice" : "Loading..."}
                   value={question}
@@ -803,14 +813,15 @@ The server returned an unexpected response format. Please try again or contact s
                   onKeyDown={handleKeyPress}
                   disabled={loading || !isHydrated}
                 />
-                <Button onClick={askQuestion} disabled={loading || !question.trim() || !isHydrated} className="px-6 h-10 text-sm flex-shrink-0">
+                <Button onClick={askQuestion} disabled={loading || !question.trim() || !isHydrated} className="px-4 sm:px-6 h-11 sm:h-10 text-sm flex-shrink-0 w-full sm:w-auto">
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  <span className="ml-2 sm:hidden">Send Question</span>
                 </Button>
               </div>
 
-              <div className="flex items-center justify-between text-sm text-muted-foreground dark:text-muted-foreground">
-                <span>Press Enter to send • Use 🎤 for voice input</span>
-                <span>Powered by AI • Answers from your documents</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs sm:text-sm text-muted-foreground dark:text-muted-foreground space-y-1 sm:space-y-0">
+                <span className="text-center sm:text-left">Press Enter to send • Use 🎤 for voice input</span>
+                <span className="text-center sm:text-right">Powered by AI • Answers from your documents</span>
               </div>
             </div>
           </div>

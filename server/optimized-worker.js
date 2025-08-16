@@ -1352,7 +1352,7 @@ const worker = new Worker(
   },
   {
     concurrency: 2, // Increased concurrency with caching
-    connection: process.env.REDIS_URL || {
+    connection: {
       host: process.env.REDIS_HOST,
       port: process.env.REDIS_PORT,
       retryDelayOnFailover: 100,

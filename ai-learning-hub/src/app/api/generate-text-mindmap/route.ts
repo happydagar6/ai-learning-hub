@@ -233,26 +233,22 @@ Generate the COMPLETE beautiful mindmap for all ${weeks.length} weeks with enhan
       "google/gemma-2-9b-it:free",
     ];
 
-    // Try each model with timeout
+    // Try each model with a 60-second timeout
     for (const model of modelsToTry) {
       try {
-        console.log(`Trying model: ${model}`);
+        console.log(`🤖 Trying model: ${model}`);
         
         const completion = await Promise.race([
           openai.chat.completions.create({
-            model,
+            model: model,
             messages: [
-              {
-                role: "system",
-                content: "You are a master ASCII artist specializing in beautiful, professional text mindmaps. Create stunning visual hierarchies using rounded box characters (╭─╮ ╰─╯), elegant connectors (●═══>), and rich emoji combinations. Always generate complete mindmaps with progressive difficulty indicators (🟢🟠🟡🔴), centered titles in boxes, and comprehensive styling. Make every mindmap a visual masterpiece while maintaining perfect readability."
-              },
               {
                 role: "user",
                 content: prompt
               }
             ],
-            max_tokens: 1900,
-            temperature: 0.3,
+            max_tokens: 4000,
+            temperature: 0.7
           }),
           new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Model timeout')), 60000)

@@ -153,11 +153,8 @@ export const POST = requireAuth(async (request: NextRequest, user: any) => {
       return NextResponse.json({ error: "Document is still being processed" }, { status: 400 })
     }
 
-    // Use the actual documentId from the found document
-    const actualDocumentId = document.documentId || documentId
-
-    // Get document content from vector store (simplified approach)
-    const documentContent = await getDocumentContent(actualDocumentId)
+  // Always use the string documentId from the found document for Qdrant lookup
+  const documentContent = await getDocumentContent(document.documentId)
 
     if (!documentContent) {
       return NextResponse.json({ error: "Could not retrieve document content" }, { status: 500 })
@@ -173,7 +170,7 @@ export const POST = requireAuth(async (request: NextRequest, user: any) => {
         {
           name: `${document.name} - Flashcards`,
           description: `Generated flashcards from ${document.name}`,
-          documentId: actualDocumentId,
+          documentId: document.documentId,
           user_id: user.id,
           settings: {
             count,
@@ -193,7 +190,7 @@ export const POST = requireAuth(async (request: NextRequest, user: any) => {
 
     // Save flashcards to database
     const flashcardsToInsert = flashcards.map((card) => ({
-      documentId: actualDocumentId,
+      documentId: document.documentId,
       user_id: user.id,
       question: card.question,
       answer: card.answer,
@@ -351,7 +348,7 @@ async function getDocumentContent(documentId: number | string): Promise<string |
   try {
     // Fetch document content from the vector store via the backend server
     // This assumes the server exposes an endpoint to get all chunks for a document
-    const response = await fetch(`${process.env.DOCUMENT_SERVER_URL || "http://localhost:8000"}/document-content?documentId=${documentId}`)
+  const response = await fetch(`${process.env.DOCUMENT_SERVER_URL}/document-content?documentId=${documentId}`)
     if (!response.ok) {
       throw new Error("Failed to fetch document content from server")
     }

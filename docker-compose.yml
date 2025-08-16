@@ -7,7 +7,7 @@ services:
     environment:
       - NODE_ENV=production
     env_file:
-      - ./ai-learning-hub/.env.production
+      - ./ai-learning-hub/.env.local
     depends_on:
       - backend
       - redis
@@ -32,9 +32,10 @@ services:
   redis:
     image: "redis:7-alpine"
     ports:
-      - "6379:6379"
+      - "6380:6379"  # Note: External port 6380
     volumes:
       - redis_data:/data
+    restart: unless-stopped
 
   # Qdrant vector database
   qdrant:
@@ -43,6 +44,7 @@ services:
       - "6333:6333"
     volumes:
       - qdrant_data:/qdrant/storage
+    restart: unless-stopped
 
 volumes:
   redis_data:

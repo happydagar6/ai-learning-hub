@@ -80,9 +80,9 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({ flashcards, hideContr
   }
 
   return (
-    <div className="flex flex-col items-center w-full max-w-2xl mx-auto min-h-[320px] p-2 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-950 dark:to-indigo-950">
+  <div className="flex flex-col items-center w-full max-w-full sm:max-w-2xl mx-auto min-h-[320px] p-2 sm:p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-blue-950 dark:to-indigo-950">
       {/* Compact Header */}
-      <div className="flex items-center justify-between w-full mb-2 px-3 py-1 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg border border-white/20 dark:border-gray-700/50 shadow-sm">
+  <div className="flex items-center justify-between w-full mb-2 px-2 sm:px-3 py-1 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg border border-white/20 dark:border-gray-700/50 shadow-sm">
         <div className="flex items-center gap-1 flex-wrap">
           <Badge variant="outline" className="text-xs font-medium bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none px-2 py-0.5 shadow-sm">
             {currentIndex + 1}/{flashcards.length}
@@ -165,7 +165,7 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({ flashcards, hideContr
             </div>
             
             {/* Compact Question Content */}
-            <div className="flex-1 p-3 sm:p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 dark:scrollbar-thumb-blue-600 scrollbar-track-transparent">
+            <div className="flex-1 p-2 sm:p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 dark:scrollbar-thumb-blue-600 scrollbar-track-transparent w-full">
               <div className="h-full flex flex-col justify-center">
                 <div className="prose prose-sm max-w-none text-center text-gray-800 dark:text-gray-200 leading-snug">
                   <ContentRenderer content={currentCard.question} />
@@ -213,7 +213,7 @@ const FlashcardViewer: React.FC<FlashcardViewerProps> = ({ flashcards, hideContr
             {/* Compact Answer Content */}
             <div className="flex-1 p-3 sm:p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-300 dark:scrollbar-thumb-emerald-600 scrollbar-track-transparent">
               <div className="h-full flex flex-col justify-center">
-                <div className="prose prose-sm max-w-none text-center text-gray-800 dark:text-gray-200 leading-snug">
+                <div className="prose prose-sm max-w-none text-center text-gray-800 dark:text-gray-200 leading-snug break-words w-full">
                   <ContentRenderer content={currentCard.answer} />
                 </div>
               </div>

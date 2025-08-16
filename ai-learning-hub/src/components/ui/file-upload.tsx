@@ -493,7 +493,8 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
     setDeletingDocumentId(documentToDelete.id)
     
     try {
-      const response = await fetch(`http://localhost:8000/documents/${documentToDelete.id}`, {
+  // Direct browser fetch to backend API
+  const response = await fetch(`${process.env.NEXT_PUBLIC_DOCUMENT_SERVER_URL}/documents/${documentToDelete.id}`, {
         method: 'DELETE',
       })
 

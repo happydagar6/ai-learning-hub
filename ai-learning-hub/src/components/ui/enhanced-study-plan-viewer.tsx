@@ -84,11 +84,11 @@ const EnhancedStudyPlanViewer: React.FC<EnhancedStudyPlanProps> = ({ studyPlan, 
     setError(null)
     
     try {
-      // Add timeout to prevent hanging requests
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout for generation
+      const timeoutId = setTimeout(() => controller.abort(), 90000)
       
-      const response = await fetch('/api/generate-text-mindmap', {
+      // FIXED: Use dedicated interactive mindmap API
+      const response = await fetch('/api/generate-interactive-mindmap', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -112,12 +112,9 @@ const EnhancedStudyPlanViewer: React.FC<EnhancedStudyPlanProps> = ({ studyPlan, 
 
       const data = await response.json()
       if (data.success) {
-        // Set both interactive data and text mindmap
+        // Set ONLY interactive data (no text mindmap)
         setMindMapData(data.data.interactiveData)
         setIsInitialized(true)
-        if (data.data.mindMapText) {
-          setTextMindMap(data.data.mindMapText)
-        }
         setCacheStatus({
           cached: data.data.cached,
           generatedAt: data.data.generatedAt
@@ -129,13 +126,33 @@ const EnhancedStudyPlanViewer: React.FC<EnhancedStudyPlanProps> = ({ studyPlan, 
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
         console.error('❌ Interactive mind map generation timed out')
-        setError('Request timed out. Please try again.')
+        setError('Generation is taking longer than expected. This may be due to high server load. Please try again or check your internet connection.')
       } else {
         console.error('❌ Interactive mind map generation error:', err)
-        setError(err instanceof Error ? err.message : 'Failed to generate interactive mind map')
+        setError(err instanceof Error ? err.message : 'Failed to generate interactive mind map. Please try again.')
       }
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // Enhanced generation with retry logic
+  const generateInteractiveMindMapWithRetry = async (forceRegenerate = false, retryCount = 0) => {
+    const maxRetries = 2
+    
+    try {
+      await generateInteractiveMindMap(forceRegenerate)
+    } catch (error) {
+      if (retryCount < maxRetries && error instanceof Error && error.name === 'AbortError') {
+        console.log(`🔄 Retry attempt ${retryCount + 1}/${maxRetries} for interactive mind map generation`)
+        setError(`Generation timed out. Retrying... (${retryCount + 1}/${maxRetries})`)
+        
+        // Wait 2 seconds before retry
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        return generateInteractiveMindMapWithRetry(forceRegenerate, retryCount + 1)
+      } else {
+        throw error
+      }
     }
   }
 
@@ -149,7 +166,8 @@ const EnhancedStudyPlanViewer: React.FC<EnhancedStudyPlanProps> = ({ studyPlan, 
     try {
       // Add timeout to prevent hanging requests
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 45000) // 45 second timeout for generation
+      // 120 second timeout for text mind map generation (increased from 45 seconds)
+      const timeoutId = setTimeout(() => controller.abort(), 120000)
       
       const response = await fetch('/api/generate-text-mindmap', {
         method: 'POST',
@@ -175,19 +193,19 @@ const EnhancedStudyPlanViewer: React.FC<EnhancedStudyPlanProps> = ({ studyPlan, 
 
       const data = await response.json()
       if (data.success) {
-        // Set both text mindmap and interactive data
-        setTextMindMap(data.data.mindMapText)
-        if (data.data.interactiveData) {
-          setMindMapData(data.data.interactiveData)
-          setIsInitialized(true)
+        // Set both interactive data and text mindmap
+        setMindMapData(data.data.interactiveData)
+        setIsInitialized(true)
+        if (data.data.mindMapText) {
+          setTextMindMap(data.data.mindMapText)
         }
         setCacheStatus({
           cached: data.data.cached,
           generatedAt: data.data.generatedAt
         })
-        console.log('✅ Text mind map generated:', data.data.cached ? 'from cache' : 'newly generated')
+        console.log('✅ Interactive mind map generated:', data.data.cached ? 'from cache' : 'newly generated')
       } else {
-        throw new Error(data.error || 'Unknown error occurred while generating text mind map')
+        throw new Error(data.error || 'Unknown error occurred while generating interactive mind map')
       }
     } catch (err) {
       if (err instanceof Error && err.name === 'AbortError') {
@@ -475,18 +493,18 @@ Exported from AI Learning Hub on ${new Date().toLocaleDateString()}
       {/* Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <CardTitle className="flex items-center gap-3">
               <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
                 <Brain className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{studyPlan.title}</h1>
+                <h1 className="text-xl sm:text-2xl font-bold">{studyPlan.title}</h1>
                 <p className="text-sm text-gray-600 mt-1">Enhanced Learning Visualization</p>
               </div>
             </CardTitle>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
               <Button 
                 variant="outline" 
                 size="sm"
@@ -498,14 +516,16 @@ Exported from AI Learning Hub on ${new Date().toLocaleDateString()}
                   }
                 }}
                 disabled={isLoading}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 text-xs sm:text-sm"
               >
                 <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                {isLoading ? 'Regenerating...' : 'Regenerate'}
+                <span className="hidden xs:inline">{isLoading ? 'Regenerating...' : 'Regenerate'}</span>
+                <span className="xs:hidden">{isLoading ? 'Regenerate...' : 'Regenerate'}</span>
               </Button>
-              <Button variant="outline" size="sm" onClick={handleExport}>
-                <Download className="h-4 w-4 mr-2" />
-                Export
+              <Button variant="outline" size="sm" onClick={handleExport} className="flex items-center gap-2 text-xs sm:text-sm">
+                <Download className="h-4 w-4" />
+                <span className="hidden xs:inline">Export</span>
+                <span className="xs:hidden">Export</span>
               </Button>
               {(mindMapData || textMindMap) && (
                 <Button 
@@ -513,36 +533,37 @@ Exported from AI Learning Hub on ${new Date().toLocaleDateString()}
                   size="sm" 
                   onClick={() => setShowDeleteDialog(true)}
                   disabled={isDeleting}
-                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 text-xs sm:text-sm"
                 >
                   <Trash2 className="h-4 w-4" />
-                  {isDeleting ? 'Deleting...' : 'Delete'}
+                  <span className="hidden xs:inline">{isDeleting ? 'Deleting...' : 'Delete'}</span>
+                  <span className="xs:hidden">{isDeleting ? 'Del...' : 'Del'}</span>
                 </Button>
               )}
             </div>
           </div>
 
           {/* Stats Row */}
-          <div className="flex gap-4 mt-4">
+          <div className="flex flex-wrap gap-2 sm:gap-4 mt-4">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-medium">{stats.estimatedHours} hours</span>
+              <span className="text-xs sm:text-sm font-medium">{stats.estimatedHours} hours</span>
             </div>
             <div className="flex items-center gap-2">
               <Target className="h-4 w-4 text-green-600" />
-              <span className="text-sm font-medium">{stats.totalWeeks} weeks</span>
+              <span className="text-xs sm:text-sm font-medium">{stats.totalWeeks} weeks</span>
             </div>
             <Badge variant={
               stats.difficulty === 'Beginner' ? 'secondary' :
               stats.difficulty === 'Intermediate' ? 'default' : 'destructive'
-            }>
+            } className="text-xs">
               {stats.difficulty}
             </Badge>
             {cacheStatus && (
               <Badge variant="outline" className="text-xs">
                 {cacheStatus.cached ? '💾 Cached' : '✨ Generated'}
                 {cacheStatus.generatedAt && (
-                  <span className="ml-1">
+                  <span className="ml-1 hidden sm:inline">
                     {new Date(cacheStatus.generatedAt).toLocaleDateString()}
                   </span>
                 )}
@@ -571,53 +592,79 @@ Exported from AI Learning Hub on ${new Date().toLocaleDateString()}
 
         {/* Interactive Mind Map */}
         <TabsContent value="interactive" className="mt-6">
-          {isLoading ? (
-            <Card>
-              <CardContent className="p-8 text-center">
-                <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading mind map...</p>
-              </CardContent>
-            </Card>
-          ) : error ? (
-            <Alert>
-              <AlertDescription>
-                {error}
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="ml-4"
-                  onClick={() => generateInteractiveMindMap(false)}
-                >
-                  Generate Mind Map
-                </Button>
-              </AlertDescription>
-            </Alert>
-          ) : mindMapData ? (
-            <InteractiveMindMap studyPlan={{...studyPlan, id: studyPlanId || undefined}} />
-          ) : (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Brain className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                <h3 className="text-xl font-semibold mb-2">No Mind Map Generated</h3>
-                <p className="text-gray-600 mb-6">
-                  Generate an interactive mind map to visualize your learning journey
-                </p>
-                <Button 
-                  onClick={() => generateInteractiveMindMap(false)}
-                  disabled={isLoading}
-                  className="flex items-center gap-2"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Generate Interactive Mind Map
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          <Card className="overflow-x-auto w-full max-w-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5" />
+                Interactive Mind Map
+                {mindMapData && (
+                  <Badge variant="secondary" className="ml-2">
+                    Generated {cacheStatus?.generatedAt ? new Date(cacheStatus.generatedAt).toLocaleDateString() : ''}
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="relative p-2 sm:p-6 w-full max-w-full overflow-x-auto">
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-gray-600">Generating interactive visualization...</p>
+                </div>
+              ) : error ? (
+                <Alert>
+                  <AlertDescription>
+                    {error}
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="ml-4"
+                      onClick={() => generateInteractiveMindMap(true)}
+                    >
+                      Try Again
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              ) : mindMapData ? (
+                <div className="w-full max-w-full overflow-x-auto">
+                  <div className="min-w-[320px] max-w-full">
+                    {/* Show loading state while nodes are being generated */}
+                    <React.Suspense fallback={
+                      <div className="text-center py-8">
+                        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                        <p className="text-gray-600">Loading interactive mind map...</p>
+                      </div>
+                    }>
+                      <InteractiveMindMap 
+                        studyPlan={{...studyPlan, id: studyPlanId || undefined}}
+                        mindMapData={mindMapData} 
+                      />
+                    </React.Suspense>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <Brain className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                  <h3 className="text-xl font-semibold mb-2">No Mind Map Generated</h3>
+                  <p className="text-gray-600 mb-6">
+                    Generate an interactive mind map to visualize your learning journey
+                  </p>
+                  <Button 
+                    onClick={() => generateInteractiveMindMapWithRetry(false)} // Use retry version
+                    disabled={isLoading}
+                    className="flex items-center gap-2"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Generate Interactive Mind Map
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Text Mind Map */}
         <TabsContent value="text" className="mt-6">
-          <Card>
+          <Card className="overflow-x-auto w-full max-w-full">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Map className="h-5 w-5" />
@@ -629,7 +676,7 @@ Exported from AI Learning Hub on ${new Date().toLocaleDateString()}
                 )}
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="relative p-2 sm:p-6 w-full max-w-full overflow-x-auto">
               {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -650,8 +697,8 @@ Exported from AI Learning Hub on ${new Date().toLocaleDateString()}
                   </AlertDescription>
                 </Alert>
               ) : textMindMap ? (
-                <div className="relative">
-                  <pre className="bg-gray-50 dark:bg-gray-900 p-6 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed whitespace-pre-wrap border max-h-[600px] overflow-y-auto">
+                <div className="relative w-full max-w-full overflow-x-auto">
+                  <pre className="bg-gray-50 dark:bg-gray-900 p-2 sm:p-6 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed whitespace-pre-wrap border max-h-[600px] overflow-y-auto w-full min-w-[320px]">
                     {textMindMap}
                   </pre>
                   <div className="absolute top-4 right-4 flex gap-2">

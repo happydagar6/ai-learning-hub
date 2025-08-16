@@ -1,0 +1,90 @@
+# Dependencies - NEVER commit these
+node_modules/
+**/node_modules/
+
+# Package manager lock files (KEEP THESE - they ensure consistent installs)
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+.vercel/
+
+# Environment files (NEVER commit these - they contain secrets)
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
+
+# Keep example files for reference
+!.env.example
+!.env.local.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+.nyc_output
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Uploads directory content (keep structure)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+
+# Cache directories
+.cache/
+.parcel-cache/
+.eslintcache
+.turbo/
+
+# Docker
+.dockerignore
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Testing
+.jest/
+
+# Misc
+*.tgz
+*.tar.gz

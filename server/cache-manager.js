@@ -3,14 +3,24 @@ import crypto from 'crypto'
 
 class CacheManager {
   constructor() {
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
+    // Use REDIS_URL if available, otherwise fall back to host/port
+    let redisConfig;
+    
+    if (process.env.REDIS_URL) {
+      redisConfig = process.env.REDIS_URL;
+    } else {
+      redisConfig = {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT) || 6379,
+      };
+    }
+    
+    this.redis = new Redis(redisConfig, {
       retryDelayOnFailover: 100,
       enableReadyCheck: false,
       maxRetriesPerRequest: 3,
-    })
-
+      lazyConnect: true, // Connect only when needed
+    });
     // Cache expiration times (in seconds)
     this.TTL = {
       EMBEDDING: 60 * 60 * 24 * 7, // 7 days for embeddings

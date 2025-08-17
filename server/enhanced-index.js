@@ -60,26 +60,60 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 )
 
-// Redis Queue setup - Updated for free hosting
-const queue = new Queue("file-upload-queue", {
-  connection: {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-    retryDelayOnFailover: 100,
-    enableReadyCheck: false,
-    maxRetriesPerRequest: 3,
-  },
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: "exponential",
-      delay: 3000,
+// Redis Queue setup - Use Upstash Redis URL
+let queue
+try {
+  // Parse Redis URL for Upstash connection
+  let redisConnection
+  
+  if (process.env.REDIS_URL) {
+    // Parse the Redis URL for Upstash
+    const url = new URL(process.env.REDIS_URL)
+    redisConnection = {
+      host: url.hostname,
+      port: parseInt(url.port) || 6379,
+      username: url.username || 'default',
+      password: url.password,
+      tls: url.protocol === 'rediss:' ? {} : undefined,
+      retryDelayOnFailover: 100,
+      enableReadyCheck: false,
+      maxRetriesPerRequest: null,
+    }
+    console.log(`🔗 Connecting to Redis at ${url.hostname}:${url.port}`)
+  } else {
+    // Fallback to local Redis
+    redisConnection = {
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT) || 6379,
+    }
+    console.log(`🔗 Connecting to local Redis at localhost:6379`)
+  }
+  
+  queue = new Queue("file-upload-queue", {
+    connection: redisConnection,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 3000,
+      },
+      removeOnComplete: 5,
+      removeOnFail: 3,
+      timeout: 180 * 1000, // 3 minutes for complex processing
     },
-    removeOnComplete: 5,
-    removeOnFail: 3,
-    timeout: 180 * 1000, // 3 minutes for complex processing
-  },
-})
+  })
+  console.log("✅ Redis queue initialized successfully")
+} catch (error) {
+  console.warn("⚠️ Redis connection failed, running without queue:", error.message)
+  // Create a mock queue for development
+  queue = {
+    add: async () => ({ id: 'mock-job' }),
+    getJobCounts: async () => ({ waiting: 0, active: 0, completed: 0, failed: 0 }),
+    getWorkers: async () => [],
+    close: async () => {},
+    client: { ping: async () => { throw new Error('Redis not available') } }
+  }
+}
 
 // Enhanced file upload configuration
 const storage = multer.diskStorage({
@@ -1171,10 +1205,20 @@ app.get("/health", async (req, res) => {
 
     // Check Redis/Queue connection
     try {
-      await queue.client.ping()
-      health.services.redis = {
-        status: "connected",
-        queueJobs: await queue.getJobCounts()
+      if (queue.client && typeof queue.client.ping === 'function') {
+        await queue.client.ping()
+        health.services.redis = {
+          status: "connected",
+          queueJobs: await queue.getJobCounts()
+        }
+      } else {
+        // Mock queue is being used
+        health.services.redis = {
+          status: "mock",
+          queueJobs: await queue.getJobCounts(),
+          note: "Using mock queue (Redis not available)"
+        }
+        health.status = "degraded"
       }
     } catch (err) {
       health.services.redis = {

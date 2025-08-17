@@ -1352,13 +1352,28 @@ const worker = new Worker(
   },
   {
     concurrency: 2, // Increased concurrency with caching
-    connection: {
-      host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
-      retryDelayOnFailover: 100,
-      enableReadyCheck: false,
-      maxRetriesPerRequest: 3,
-    },
+    connection: (() => {
+      if (process.env.REDIS_URL) {
+        // Parse the Redis URL for Upstash
+        const url = new URL(process.env.REDIS_URL)
+        return {
+          host: url.hostname,
+          port: parseInt(url.port) || 6379,
+          username: url.username || 'default',
+          password: url.password,
+          tls: url.protocol === 'rediss:' ? {} : undefined,
+          retryDelayOnFailover: 100,
+          enableReadyCheck: false,
+          maxRetriesPerRequest: null,
+        }
+      } else {
+        // Fallback to local Redis
+        return {
+          host: process.env.REDIS_HOST || 'localhost',
+          port: parseInt(process.env.REDIS_PORT) || 6379,
+        }
+      }
+    })(),
     settings: {
       stalledInterval: 60 * 1000, // Check for stalled jobs every 1 minute
       maxStalledCount: 1, // Retry only once if job is stalled

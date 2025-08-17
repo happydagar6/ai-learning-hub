@@ -34,10 +34,11 @@ console.log("✅ All environment variables validated successfully")
 
 // Initialize services
 const app = express()
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+// Remove this hardcoded CORS configuration:
+// app.use(cors({
+//   origin: 'http://localhost:3000',
+//   credentials: true
+// }));
 const PORT = process.env.PORT || 8000
 
 // Initialize optimized services

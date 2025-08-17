@@ -46,9 +46,26 @@ const performanceMonitor = new PerformanceMonitor()
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL, /\.vercel\.app$/] 
-    : ["http://localhost:3000", "http://localhost:3001"],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true)
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001', 
+      'https://ai-learning-hub-kappa.vercel.app',
+      process.env.FRONTEND_URL
+    ].filter(Boolean) // Remove undefined values
+    
+    // Also allow any vercel.app subdomain
+    const isVercelApp = origin.endsWith('.vercel.app')
+    
+    if (allowedOrigins.includes(origin) || isVercelApp) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true,
 }))
 app.use(express.json({ limit: "50mb" }))

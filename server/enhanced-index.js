@@ -769,7 +769,12 @@ app.get("/document-content", async (req, res) => {
       const { QdrantClient } = await import("@qdrant/js-client-rest")
       const { OpenAIEmbeddings } = await import("@langchain/openai")
 
-  const client = new QdrantClient({ url: process.env.QDRANT_URL || "http://qdrant:6333" })
+  const client = new QdrantClient({ 
+    url: process.env.QDRANT_URL || "http://qdrant:6333",
+    apiKey: process.env.QDRANT_API_KEY,
+    timeout: 30000,
+    checkCompatibility: false // Disable version compatibility check
+  })
       const embeddings = new OpenAIEmbeddings({
         model: "text-embedding-3-small",
         apiKey: process.env.OPENAI_API_KEY,
@@ -1084,7 +1089,12 @@ app.get("/debug/vector-status", async (req, res) => {
     const { QdrantClient } = await import("@qdrant/js-client-rest")
     const { OpenAIEmbeddings } = await import("@langchain/openai")
 
-    const client = new QdrantClient({ url: process.env.QDRANT_URL || "http://qdrant:6333" })
+    const client = new QdrantClient({ 
+      url: process.env.QDRANT_URL || "http://qdrant:6333",
+      apiKey: process.env.QDRANT_API_KEY,
+      timeout: 30000,
+      checkCompatibility: false // Disable version compatibility check
+    })
     const embeddings = new OpenAIEmbeddings({
       model: "text-embedding-3-small",
       apiKey: process.env.OPENAI_API_KEY,

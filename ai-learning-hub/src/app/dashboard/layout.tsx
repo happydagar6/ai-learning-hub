@@ -53,9 +53,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         <div className="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center justify-between w-full md:w-auto">
             <h1 className="text-2xl font-bold text-foreground">Learning Hub</h1>
-            <Button variant="outline" className="md:hidden" onClick={() => router.push('/')}>
-              <Home className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2 md:hidden">
+              <UserButton 
+                appearance={{
+                  elements: {
+                    avatarBox: "h-7 w-7",
+                    userButtonPopoverCard: "shadow-lg",
+                  }
+                }}
+                userProfileMode="modal"
+                afterSignOutUrl="/"
+              />
+              <ThemeToggle />
+              <Button variant="outline" onClick={() => router.push('/')}>
+                <Home className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           
           <nav className="flex items-center gap-2 md:gap-4 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 no-scrollbar">

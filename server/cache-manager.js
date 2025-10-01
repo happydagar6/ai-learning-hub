@@ -18,7 +18,7 @@ class CacheManager {
     this.redis = new Redis(redisConfig, {
       retryDelayOnFailover: 100,
       enableReadyCheck: false,
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: 4,
       lazyConnect: true, // Connect only when needed
     });
     // Cache expiration times (in seconds)
@@ -79,10 +79,8 @@ class CacheManager {
       const cached = await this.redis.get(key)
       if (cached) {
         const data = JSON.parse(cached)
-        console.log(`📦 Cache HIT: Embedding (${data.size} dimensions)`)
         return data.embedding
       }
-      console.log('📦 Cache MISS: Embedding')
       return null
     } catch (error) {
       console.error('Failed to retrieve cached embedding:', error)

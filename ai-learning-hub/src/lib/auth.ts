@@ -3,21 +3,22 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function getUserFromRequest(req: NextRequest) {
   try {
-    // Pass the request to auth() to ensure proper context
-    const { userId } = await auth()
+    // Get auth context - this should work for both page and API routes
+    const authResult = await auth()
+    const { userId } = authResult
     
     if (!userId) {
-      console.log('🔐 No userId found in request')
+      console.log('🔐 No userId found in auth context')
       return null
     }
 
-    console.log('🔐 User authenticated:', userId)
+    console.log('🔐 User authenticated successfully:', userId)
     return {
       id: userId,
       // You can add more user data here if needed
     }
   } catch (error) {
-    console.error('🔐 Error getting user from request:', error)
+    console.error('🔐 Error getting user from auth context:', error)
     return null
   }
 }
@@ -39,7 +40,7 @@ export function requireAuth(handler: (req: NextRequest, user: any) => Promise<Ne
         )
       }
 
-      console.log('🔐 User authenticated, proceeding with request')
+      console.log('🔐 User authenticated, proceeding with request for user:', user.id)
       return handler(req, user)
     } catch (error) {
       console.error('🔐 Authentication error:', error)
@@ -49,7 +50,7 @@ export function requireAuth(handler: (req: NextRequest, user: any) => Promise<Ne
           error: 'Authentication Error',
           message: 'Failed to verify authentication. Please try signing in again.'
         }, 
-        { status: 401 }
+        { status: 500 }
       )
     }
   }

@@ -1,0 +1,236 @@
+/* Mobile-first responsive enhancements with beautiful color scheme */
+
+/* Enhanced touch targets for mobile */
+@media (max-width: 768px) {
+  /* Ensure all interactive elements are at least 44px for touch */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Smooth scrolling for mobile */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent zoom on form inputs */
+  input, select, textarea {
+    font-size: 16px;
+  }
+  
+  /* Enhanced mobile sidebar animations */
+  .mobile-sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%);
+  }
+  
+  .mobile-sidebar.open {
+    transform: translateX(0);
+  }
+  
+  /* Staggered animation for sidebar items */
+  .sidebar-item-enter {
+    animation: slideInStagger 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+  
+  .sidebar-backdrop {
+    transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  
+  /* Mobile-optimized header */
+  .mobile-header {
+    height: 64px; /* Slightly taller for better touch */
+    padding: 0 16px;
+    background: linear-gradient(90deg, #ffffff 0%, #dbeafe 50%, #e0e7ff 100%);
+  }
+  
+  /* Better tap highlights */
+  .mobile-nav-item {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Interactive hover states */
+  .nav-item-interactive {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .nav-item-interactive:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .tablet-nav {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .tablet-nav-item {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1024px) {
+  .desktop-nav {
+    gap: 12px;
+  }
+  
+  .desktop-nav-item {
+    min-width: auto;
+  }
+}
+
+/* Animation enhancements with beautiful colors */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInStagger {
+  from {
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.3) translateX(-50px);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05) translateX(0);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(0.9) translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in {
+  animation: slideInFromLeft 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.bounce-in {
+  animation: bounceIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.stagger-in {
+  animation: slideInStagger 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.shimmer {
+  animation: shimmer 1.5s infinite;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+  background-size: 468px 100%;
+}
+
+/* Mobile menu backdrop blur with gradient */
+.mobile-backdrop {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+}
+
+/* Responsive text scaling */
+@media (max-width: 640px) {
+  .responsive-text-lg {
+    font-size: 1rem;
+  }
+  
+  .responsive-text-xl {
+    font-size: 1.125rem;
+  }
+}
+
+/* Focus states for accessibility with blue theme */
+.focus-ring:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+}
+
+/* Beautiful interactive elements */
+.interactive-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 50%, #e0e7ff 100%);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+/* Gradient text utilities */
+.text-gradient-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Button enhancement classes */
+.btn-gradient {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border: none;
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+}

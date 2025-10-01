@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=OpenDyslexic&display=swap');
 @import "tailwindcss";
-@import "tw-animate-css";
+@import "./mobile-enhancements.css";
 
 
 @custom-variant dark (&:is(.dark *));

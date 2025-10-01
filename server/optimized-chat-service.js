@@ -1,5 +1,3 @@
-import express from 'express'
-import cors from 'cors'
 import { OpenAIEmbeddings } from "@langchain/openai"
 import { QdrantVectorStore } from "@langchain/qdrant"
 import { QdrantClient } from "@qdrant/js-client-rest"
@@ -678,7 +676,7 @@ class OptimizedChatService {
       }
     }
 
-    return uniqueDocs
+    return uniqueDocs;
   }
 
   // Create content hash for deduplication
@@ -1211,7 +1209,6 @@ class OptimizedChatService {
             content: promptData.userPrompt 
           }
         ],
-        // temperature: 0.1, // Lower for more consistent, factual responses
         max_completion_tokens: 6000, // Significantly increased for comprehensive explanations
         presence_penalty: 0.1,
         frequency_penalty: 0.1,

@@ -12,11 +12,39 @@ const HomePage: React.FC = () => {
   const router = useRouter();
   const { isSignedIn, user, isLoaded } = useUser();
 
+  // Redirect authenticated users to dashboard
+  React.useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      console.log('🔐 Client-side: User is signed in, redirecting to dashboard');
+      router.push('/dashboard');
+    }
+  }, [isLoaded, isSignedIn, router]);
+
   const handleGetStarted = () => {
     if (isSignedIn) {
       router.push('/dashboard');
     }
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // If user is signed in, show loading while redirecting
+  if (isSignedIn) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Redirecting to dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isLoaded) {
     return (

@@ -54,7 +54,7 @@ app.use(cors({
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001', 
-      'https://ai-learning-hub-kappa.vercel.app',
+      '',
       process.env.FRONTEND_URL
     ].filter(Boolean) // Remove undefined values
     
@@ -79,7 +79,7 @@ const supabase = createClient(
 )
 
 // Redis Queue setup - Use Upstash Redis URL
-let queue
+let queue;
 try {
   // Parse Redis URL for Upstash connection
   let redisConnection
@@ -787,7 +787,7 @@ app.get("/document-content", async (req, res) => {
       
       // Search for all chunks belonging to this document
       // We'll use a broad search and then filter by metadata
-      const searchResults = await vectorStore.similaritySearch("", 100) // Get many results
+      const searchResults = await vectorStore.similaritySearch("", 100)
       
     // Debug: Print all metadata for returned chunks
     console.log("Qdrant searchResults metadata:", searchResults.map(doc => doc.metadata));

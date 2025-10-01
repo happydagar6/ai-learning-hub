@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { Brain, CreditCard, MessageSquare, Upload, Bell, Target } from 'lucide-react'
+import { Brain, CreditCard, MessageSquare, Upload, Bell } from 'lucide-react'
 import DashboardOverview from '@/components/ui/dashboard-overview'
 import { WelcomeCard } from '@/components/ui/welcome-card'
 
@@ -49,13 +49,6 @@ const features: Feature[] = [
     icon: Bell,
     href: "/dashboard/reminders",
     color: "bg-pink-500 hover:bg-pink-600"
-  },
-  {
-    title: "Weekly Activity",
-    description: "See your weekly learning progress",
-    icon: Target,
-    href: "/dashboard/goals",
-    color: "bg-indigo-500 hover:bg-indigo-600"
   }
 ];
 

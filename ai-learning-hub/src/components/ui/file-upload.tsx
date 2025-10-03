@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { FileText, CheckCircle, Loader2, Plus, FolderOpen, X, Info, Upload, AlertCircle, File, FileType, Sheet, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -106,6 +106,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
   // Track resumed jobs to avoid duplicate notifications
   const [resumedJobs, setResumedJobs] = useState<Set<string>>(new Set())
   const [activePollingIntervals, setActivePollingIntervals] = useState<Set<NodeJS.Timeout>>(new Set())
+  
+  // Track monitoring jobs to avoid duplicates
+  const monitoringJobs = useRef<Set<string>>(new Set())
 
   // Helper function to get file type icon
   const getFileTypeIcon = (fileType?: string, fileName?: string) => {
@@ -189,23 +192,18 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
       new Date().getTime() - new Date(doc.created_at || 0).getTime() < 30 * 60 * 1000
     )
 
-    console.log(`🔍 Checking ${potentialProcessingDocs.length} potentially processing documents`)
-
     for (const doc of potentialProcessingDocs) {
       if (!doc.documentId) continue // Skip if no documentId
       
       try {
         const statusData = await checkProcessingStatus(doc.documentId)
         if (statusData && (statusData.status === 'processing' || statusData.status === 'queued')) {
-          console.log(`📄 Resuming monitoring for document: ${doc.name} (Status: ${statusData.status})`)
-          
           // Start monitoring this document
           startDocumentMonitoring(doc.documentId, doc.name)
           
           // Add a small delay between starting multiple monitors
           await new Promise(resolve => setTimeout(resolve, 500))
         } else if (statusData && statusData.status === 'completed') {
-          console.log(`📄 Document ${doc.name} was completed while away, refreshing...`)
           // Just refresh the documents list, no need to monitor
           await fetchDocuments()
         }
@@ -217,8 +215,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
 
   const startDocumentMonitoring = (jobId: string, filename: string) => {
     // Check if we're already monitoring this job
-    if (resumedJobs.has(jobId)) {
-      console.log(`📄 Already monitoring job ${jobId}, skipping`)
+    if (monitoringJobs.current.has(jobId)) {
       return
     }
 
@@ -242,13 +239,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
 
     const pollInterval = setInterval(async () => {
       pollCount++
-      console.log(`Polling resumed job ${jobId}... Attempt ${pollCount}`)
 
       const statusData = await checkProcessingStatus(jobId)
 
       if (statusData) {
-        console.log("Resumed status update:", statusData)
-
         setUploadStatus((prev) => ({
           ...prev,
           progress: statusData.progress || 50,
@@ -303,7 +297,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
           })
         }
       } else if (pollCount >= maxPolls) {
-        console.log("Resumed polling timeout reached")
         clearInterval(pollInterval)
         setActivePollingIntervals(prev => {
           const newSet = new Set(prev)
@@ -373,9 +366,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
       let url = '/api/documents'
       if (selectedCourse) {
         url += `?courseId=${selectedCourse}`
-        console.log('📋 Fetching documents for course:', selectedCourse)
-      } else {
-        console.log('📋 Fetching all documents')
       }
 
       const response = await fetch(url, {
@@ -385,11 +375,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
         }
       })
       const result = await response.json()
-
-      console.log('📄 Documents fetch result:', result)
-      console.log('📄 Response status:', response.status)
-      console.log('📄 Documents array:', result.documents)
-      console.log('📄 Documents count:', result.documents?.length || 0)
 
       if (response.ok) {
         setDocuments(result.documents || [])
@@ -526,7 +511,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
       })
       if (response.ok) {
         const statusData = await response.json()
-        console.log(`Status check for job ${jobId}:`, statusData)
         return statusData
       } else {
         console.warn(`Status check failed for job ${jobId}: ${response.status} ${response.statusText}`)
@@ -616,13 +600,10 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
 
               const pollInterval = setInterval(async () => {
                 pollCount++
-                console.log(`Polling for status... Attempt ${pollCount}`)
 
                 const statusData = await checkProcessingStatus(result.jobId)
 
                 if (statusData) {
-                  console.log("Status update:", statusData)
-
                   setUploadStatus((prev) => ({
                     ...prev,
                     progress: statusData.progress || 0,
@@ -651,7 +632,6 @@ const FileUpload: React.FC<FileUploadProps> = ({ userId }) => {
                     showMessage("Processing failed. Please try again.", "error")
                   }
                 } else if (pollCount >= maxPolls) {
-                  console.log("Polling timeout reached")
                   clearInterval(pollInterval)
                   setUploadStatus({
                     status: "error",

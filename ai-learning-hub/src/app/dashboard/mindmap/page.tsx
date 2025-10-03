@@ -38,13 +38,7 @@ export default function EnhancedMindMapPage() {
         throw new Error("User authentication required");
       }
 
-      console.log("🔍 Fetching study plan:", studyPlanId);
-      console.log("🔍 studyPlanId:", studyPlanId);
-      console.log("🔍 user.id:", user.id);
-
       // Fetch study plan via API endpoint (uses service role client)
-      console.log("🔍 Fetching study plan via API:", studyPlanId);
-      
       const response = await fetch(`/api/study-plans?id=${studyPlanId}`, {
         method: 'GET',
         credentials: 'include',
@@ -53,10 +47,7 @@ export default function EnhancedMindMapPage() {
         },
       });
 
-      console.log("🔍 API Response status:", response.status);
-      
       const result = await response.json();
-      console.log("🔍 API Response data:", result);
 
       if (!response.ok) {
         throw new Error(result.error || `HTTP ${response.status}: Failed to fetch study plan`);
@@ -67,8 +58,6 @@ export default function EnhancedMindMapPage() {
       }
 
       const studyPlan = result.data;
-
-      console.log("✅ Study plan fetched successfully:", studyPlan);
 
       // Check if component is still mounted before updating state
       if (!isMountedRef.current) return;

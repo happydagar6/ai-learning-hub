@@ -91,11 +91,9 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
 
   // FIXED: Generate mind map nodes - REMOVED completedNodes dependency to prevent circular dependency
   const generateNodes = useCallback((): MindMapNode[] => {
-    console.log('🔄 Generating nodes...', { mindMapData, studyPlan })
     
     // Check if we have mindMapData with nodes
     if (mindMapData && mindMapData.nodes && Array.isArray(mindMapData.nodes)) {
-      console.log('🎯 Using mindMapData with', mindMapData.nodes.length, 'nodes')
       const nodes: MindMapNode[] = []
       
       // Add central node
@@ -150,11 +148,9 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
         })
       })
       
-      console.log('✅ Generated', nodes.length, 'nodes from mindMapData')
       return nodes
     }
     
-    console.log('⚠️ No valid mindMapData found, falling back to studyPlan generation')
     const nodes: MindMapNode[] = []
     
     // Central node
@@ -221,14 +217,12 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
 
   // Regenerate nodes when mindMapData or studyPlan changes (NOT when completedNodes changes)
   useEffect(() => {
-    console.log('🔄 mindMapData or studyPlan changed, regenerating nodes...')
     const newNodes = generateNodes()
     setNodes(newNodes)
   }, [generateNodes])
 
   // FIXED: This useEffect handles ONLY completion state synchronization
   useEffect(() => {
-    console.log('🔄 Synchronizing node completion states...', { completedNodes: Array.from(completedNodes) })
     setNodes(prev => prev.map(node => ({
       ...node,
       completed: completedNodes.has(node.id)
@@ -237,7 +231,6 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
 
   // FIXED: Simplified toggleNodeCompletion - only manages completedNodes state
   const toggleNodeCompletion = useCallback((nodeId: string) => {
-    console.log('🔄 Toggling completion for node:', nodeId)
     
     setCompletedNodes(prev => {
       const newCompleted = new Set(prev)
@@ -245,10 +238,8 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
       
       if (wasCompleted) {
         newCompleted.delete(nodeId)
-        console.log('❌ Unmarked node:', nodeId)
       } else {
         newCompleted.add(nodeId)
-        console.log('✅ Marked node as complete:', nodeId)
       }
       
       return newCompleted
@@ -311,7 +302,6 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
       
       if (result.success) {
         setLastSaved(new Date().toLocaleTimeString())
-        console.log('✅ Interactive mindmap saved successfully')
       } else {
         console.error('❌ Failed to save interactive mindmap:', result.error)
       }
@@ -348,7 +338,6 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
         if (nodeStates) {
           restoredCompletedNodes = new Set(Object.keys(nodeStates).filter(nodeId => nodeStates[nodeId]?.completed))
           setCompletedNodes(restoredCompletedNodes)
-          console.log('🔄 Restored completed nodes:', Array.from(restoredCompletedNodes))
         }
         
         // Only restore zoom, let the completion state sync happen via useEffect
@@ -387,9 +376,7 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
         }
 
         setLastSaved(`Loaded: ${loadedTimeString}`)
-        console.log('✅ Interactive mindmap loaded successfully')
       } else if (result.success && !result.data) {
-        console.log('No saved interactive mindmap data found - keeping current nodes')
         setLastSaved('No saved data found')
       } else {
         console.error('❌ Failed to load interactive mindmap:', result.error)
@@ -407,7 +394,6 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
   useEffect(() => {
     if (studyPlan.id && completedNodes.size >= 0) {
       const saveTimeout = setTimeout(() => {
-        console.log('💾 Auto-saving interactive mindmap...', { completedNodes: Array.from(completedNodes) })
         saveInteractiveMindMap()
       }, 2000)
   
@@ -425,15 +411,6 @@ const InteractiveMindMap: React.FC<InteractiveMindMapProps> = ({ studyPlan, mind
   }, [studyPlan.id, nodes.length]) // REMOVED loadInteractiveMindMap from dependencies
 
   const selectedNodeData = nodes.find(n => n.id === selectedNode)
-
-  // Add debug logging
-  console.log('🎨 Rendering InteractiveMindMap:', {
-    nodesCount: nodes.length,
-    mindMapData: !!mindMapData,
-    selectedNode,
-    zoom,
-    isMobile
-  })
 
   return (
     <div className={`${isFullscreen ? 'fixed inset-0 z-50 bg-white dark:bg-slate-950' : ''} w-full max-w-full overflow-x-auto`}>

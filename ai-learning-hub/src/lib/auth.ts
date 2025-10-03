@@ -8,11 +8,9 @@ export async function getUserFromRequest(req: NextRequest) {
     const { userId } = authResult
     
     if (!userId) {
-      console.log('🔐 No userId found in auth context')
       return null
     }
 
-    console.log('🔐 User authenticated successfully:', userId)
     return {
       id: userId,
       // You can add more user data here if needed
@@ -29,7 +27,6 @@ export function requireAuth(handler: (req: NextRequest, user: any) => Promise<Ne
       const user = await getUserFromRequest(req)
       
       if (!user) {
-        console.log('🔐 Authentication required - no user found')
         return NextResponse.json(
           { 
             success: false,
@@ -40,7 +37,6 @@ export function requireAuth(handler: (req: NextRequest, user: any) => Promise<Ne
         )
       }
 
-      console.log('🔐 User authenticated, proceeding with request for user:', user.id)
       return handler(req, user)
     } catch (error) {
       console.error('🔐 Authentication error:', error)

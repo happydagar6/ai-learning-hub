@@ -6,15 +6,14 @@ import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import { 
   Menu, 
-  Brain, 
+  Brain,
   Upload, 
   MessageSquare, 
   Bell, 
   Zap,
   Home,
   BookOpen,
-  FlaskConical,
-  Target
+  FlaskConical
 } from 'lucide-react'
 import { Button } from './button'
 import { Badge } from './badge'
@@ -26,10 +25,8 @@ const quickNavItems = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Upload', href: '/dashboard/upload', icon: Upload },
   { name: 'Study Plans', href: '/dashboard/study-plan', icon: BookOpen },
-  { name: 'Mind Maps', href: '/dashboard/mindmap', icon: Brain },
   { name: 'Flashcards', href: '/dashboard/flashcards', icon: FlaskConical },
   { name: 'Q&A', href: '/dashboard/qa', icon: MessageSquare },
-  { name: 'Goals', href: '/dashboard/goals', icon: Target },
   { name: 'Immersive', href: '/dashboard/immersive', icon: Zap, badge: 'New' },
 ]
 

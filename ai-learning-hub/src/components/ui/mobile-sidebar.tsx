@@ -7,8 +7,7 @@ import {
   X, 
   Home, 
   BookOpen, 
-  Brain, 
-  Target, 
+  Brain,
   FlaskConical,
   MessageSquare,
   Upload,
@@ -38,7 +37,6 @@ const navigationItems = [
   {
     category: 'Learning Tools',
     items: [
-      { name: 'Mind Maps', href: '/dashboard/mindmap', icon: Brain },
       { name: 'Flashcards', href: '/dashboard/flashcards', icon: FlaskConical },
       { name: 'Q&A Chat', href: '/dashboard/qa', icon: MessageSquare },
       { name: 'Immersive Mode', href: '/dashboard/immersive', icon: Zap, badge: 'New' },
@@ -47,7 +45,6 @@ const navigationItems = [
   {
     category: 'Progress',
     items: [
-      { name: 'Goals', href: '/dashboard/goals', icon: Target },
       { name: 'Reminders', href: '/dashboard/reminders', icon: Bell },
     ]
   }

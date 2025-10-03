@@ -35,8 +35,6 @@ export default clerkMiddleware(async (auth, req) => {
     const authResult = await auth()
     const { userId, sessionId } = authResult
     
-    console.log(`🔐 Middleware - Path: ${pathname}, UserId: ${userId ? userId.substring(0, 8) + '...' : 'null'}, SessionId: ${sessionId ? 'present' : 'null'}`)
-
     // Allow API status routes to be public
     if (pathname.startsWith('/api/status')) {
       return NextResponse.next()
@@ -45,7 +43,6 @@ export default clerkMiddleware(async (auth, req) => {
     // For API routes, ensure authentication is present
     if (pathname.startsWith('/api/') && isProtectedRoute(req)) {
       if (!userId) {
-        console.log('🔐 API route accessed without authentication')
         return NextResponse.json(
           { 
             success: false,
@@ -61,19 +58,16 @@ export default clerkMiddleware(async (auth, req) => {
 
     // If user is signed in and on the home page, redirect to dashboard
     if (userId && pathname === '/') {
-      console.log('🔐 Authenticated user on home page, redirecting to dashboard')
       return NextResponse.redirect(new URL('/dashboard', url))
     }
 
     // If user is signed in and trying to access auth pages, redirect to dashboard
     if (userId && (pathname.startsWith('/sign-in') || pathname.startsWith('/sign-up'))) {
-      console.log('🔐 Authenticated user accessing auth pages, redirecting to dashboard')
       return NextResponse.redirect(new URL('/dashboard', url))
     }
 
     // If user is not signed in and trying to access protected routes, redirect to sign-in
     if (!userId && isProtectedRoute(req)) {
-      console.log('🔐 Unauthenticated user accessing protected route, redirecting to sign-in')
       return NextResponse.redirect(new URL('/sign-in', url))
     }
 

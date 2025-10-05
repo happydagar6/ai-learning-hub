@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { FileText, Calendar, BookOpen, RefreshCw } from 'lucide-react'
 import { Button } from './button'
 import { Card } from './card'
@@ -15,7 +15,7 @@ const DocumentSelector: React.FC<DocumentSelectorProps> = ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     setLoading(true)
     setError(null)
     
@@ -45,11 +45,11 @@ const DocumentSelector: React.FC<DocumentSelectorProps> = ({
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedDocument, onDocumentSelect])
 
   useEffect(() => {
     fetchDocuments()
-  }, [])
+  }, [fetchDocuments])
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleDateString('en-US', {

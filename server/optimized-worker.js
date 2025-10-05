@@ -42,7 +42,7 @@ class OptimizedDocumentProcessor {
     this.client = new QdrantClient({
       url: process.env.QDRANT_URL,
       apiKey: process.env.QDRANT_API_KEY,
-      timeout: 30000 // 30 second timeout for Qdrant operations
+      timeout: 30000 // 35 second timeout for Qdrant operations
     })
     this.cache = new CacheManager()
     

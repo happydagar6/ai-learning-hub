@@ -61,7 +61,6 @@ const Dashboard = () => {
   useEffect(() => {
     const checkDocuments = async () => {
       try {
-        console.log('🔍 Checking documents for user:', user?.id);
         const response = await fetch('/api/documents', {
           credentials: 'include',
           headers: {
@@ -73,7 +72,6 @@ const Dashboard = () => {
         
         if (response.ok) {
           const data = await response.json();
-          console.log('📄 Documents data:', data);
           setHasDocuments(data.documents && data.documents.length > 0);
         } else {
           console.error('❌ Failed to fetch documents:', response.status, response.statusText);

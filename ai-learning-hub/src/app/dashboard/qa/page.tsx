@@ -2,7 +2,6 @@
 import React, { useState } from 'react'
 import QAInterface from '@/components/ui/qa-interface'
 import CompactDocumentSelector from '@/components/ui/CompactDocumentSelector'
-import { Button } from '@/components/ui/button'
 import { StudyDocument } from '@/types/document'
 import { useUser } from '@clerk/nextjs'
 

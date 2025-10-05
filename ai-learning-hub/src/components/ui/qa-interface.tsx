@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bot, Loader2, MessageSquare, Send, User, Copy, Check, Download, Trash2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -54,7 +54,7 @@ interface IMessage {
 
 const QAInterface: React.FC<QAInterfaceProps> = ({ userId, selectedDocument }) => {
   // Load messages from localStorage on component mount
-  const loadMessagesFromStorage = (): IMessage[] => {
+  const loadMessagesFromStorage = useCallback((): IMessage[] => {
     if (typeof window !== 'undefined') {
       try {
         const savedMessages = localStorage.getItem(`qa-messages-${userId}`)
@@ -73,10 +73,10 @@ const QAInterface: React.FC<QAInterfaceProps> = ({ userId, selectedDocument }) =
       }
     }
     return []
-  }
+  }, [userId])
 
   // Save messages to localStorage
-  const saveMessagesToStorage = (messages: IMessage[]) => {
+  const saveMessagesToStorage = useCallback((messages: IMessage[]) => {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(`qa-messages-${userId}`, JSON.stringify(messages))
@@ -84,7 +84,7 @@ const QAInterface: React.FC<QAInterfaceProps> = ({ userId, selectedDocument }) =
         console.warn('Error saving messages to localStorage:', error)
       }
     }
-  }
+  }, [userId])
 
   const [question, setQuestion] = useState<string>("")
   const [messages, setMessages] = useState<IMessage[]>([])
@@ -121,14 +121,14 @@ const QAInterface: React.FC<QAInterfaceProps> = ({ userId, selectedDocument }) =
     setMessages(loadedMessages)
     setHasUserInteracted(loadedMessages.length > 0)
     setShowRestoredIndicator(loadedMessages.length > 0)
-  }, [userId])
+  }, [userId, loadMessagesFromStorage])
 
   // Save messages to localStorage whenever messages change (but only after hydration)
   useEffect(() => {
     if (isHydrated) {
       saveMessagesToStorage(messages)
     }
-  }, [messages, isHydrated])
+  }, [messages, isHydrated, saveMessagesToStorage])
 
   // Hide the restored indicator after 5 seconds
   useEffect(() => {
@@ -554,17 +554,13 @@ The server returned an unexpected response format. Please try again or contact s
                   messages.map((msg, idx) => (
                     <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} mb-1.5 sm:mb-2 md:mb-3`}>
                       <Card
-                        className={`shadow-md border overflow-hidden transition-all duration-200 ${
+                        className={`shadow-md border transition-all duration-200 ${
                           msg.role === "user" 
-                            ? "bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700 max-w-[75%] sm:max-w-[65%] md:max-w-[55%] lg:max-w-[45%] min-w-[60px] sm:min-w-[80px]" 
-                            : "bg-card dark:bg-card border-border dark:border-border max-w-[90%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%]"
+                            ? "bg-blue-600 dark:bg-blue-700 text-white border-blue-600 dark:border-blue-700 max-w-[88%] sm:max-w-[75%] md:max-w-[65%] lg:max-w-[55%]" 
+                            : "bg-card dark:bg-card border-border dark:border-border max-w-[95%] sm:max-w-[85%] md:max-w-[80%] lg:max-w-[75%]"
                         }`}
                       >
-                        <CardContent className={`${
-                          msg.role === "user" 
-                            ? "p-2 sm:p-2.5 md:p-3" 
-                            : "p-2.5 sm:p-3 md:p-3.5"
-                        }`}>
+                        <CardContent className="p-3 sm:p-4">
                           {/* Action Buttons for Assistant Messages - More Compact */}
                           {msg.role === "assistant" && (
                             <div className="flex items-center justify-end space-x-0.5 sm:space-x-1 mb-1 sm:mb-1.5 md:mb-2 flex-wrap gap-0.5">
@@ -624,15 +620,20 @@ The server returned an unexpected response format. Please try again or contact s
                               )}
                             </div>
 
-                            <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex-1 min-w-0">
                               {msg.role === "assistant" ? (
-                                <div className="space-y-1 sm:space-y-1.5 md:space-y-2 max-h-40 sm:max-h-48 md:max-h-56 overflow-y-auto">
+                                <div className="space-y-2 max-h-72 sm:max-h-96 overflow-y-auto">
                                   <div
-                                    className="prose prose-sm max-w-none text-foreground break-words text-xs sm:text-sm md:text-base leading-snug sm:leading-relaxed"
+                                    className="prose prose-sm max-w-none text-foreground text-sm sm:text-base leading-relaxed"
+                                    style={{ 
+                                      wordBreak: 'break-word', 
+                                      overflowWrap: 'anywhere',
+                                      hyphens: 'auto'
+                                    }}
                                     dangerouslySetInnerHTML={{
-                                      __html: `<p class="mb-1.5 sm:mb-2 leading-snug sm:leading-relaxed text-foreground text-xs sm:text-sm md:text-base">${formatResponse(
+                                      __html: `<div class="message-content" style="word-break: break-word; overflow-wrap: anywhere; hyphens: auto;">${formatResponse(
                                         typeof msg.content === "string" ? msg.content : msg.content?.content || "",
-                                      )}</p>`,
+                                      )}</div>`,
                                     }}
                                   />
 
@@ -656,11 +657,19 @@ The server returned an unexpected response format. Please try again or contact s
                                   )}
                                 </div>
                               ) : (
-                                <div className={`break-words whitespace-pre-wrap leading-snug ${
-                                  msg.role === "user" 
-                                    ? "text-white text-xs sm:text-sm md:text-base" 
-                                    : "text-foreground dark:text-foreground text-xs sm:text-sm md:text-base"
-                                }`}>
+                                <div 
+                                  className={`leading-relaxed text-sm sm:text-base ${
+                                    msg.role === "user" 
+                                      ? "text-white" 
+                                      : "text-foreground"
+                                  }`} 
+                                  style={{ 
+                                    wordBreak: 'break-word', 
+                                    overflowWrap: 'anywhere',
+                                    whiteSpace: 'pre-wrap',
+                                    hyphens: 'auto'
+                                  }}
+                                >
                                   {typeof msg.content === "string" ? msg.content : msg.content?.content}
                                 </div>
                               )}
@@ -691,8 +700,8 @@ The server returned an unexpected response format. Please try again or contact s
 
                 {loading && (
                   <div className="flex justify-start">
-                    <Card className="bg-card border-border shadow-md max-w-[90%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%]">
-                      <CardContent className="p-2.5 sm:p-3 md:p-4">
+                    <Card className="bg-card border-border shadow-md max-w-[95%] sm:max-w-[85%] md:max-w-[80%] lg:max-w-[75%]">
+                      <CardContent className="p-3 sm:p-4">
                         <div className="flex items-center space-x-2 sm:space-x-2.5">
                           <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                             <Bot className="h-2.5 w-2.5 sm:h-3 sm:w-3 md:h-3.5 md:w-3.5 text-primary" />

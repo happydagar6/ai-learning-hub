@@ -86,7 +86,7 @@ export default function EnhancedMindMapPage() {
       if (!isMountedRef.current) return;
       setLoading(false);
     }
-  }, [studyPlanId]);
+  }, [studyPlanId, user]);
 
   useEffect(() => {
     isMountedRef.current = true;

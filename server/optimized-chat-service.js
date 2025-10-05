@@ -1209,7 +1209,7 @@ class OptimizedChatService {
             content: promptData.userPrompt 
           }
         ],
-        max_completion_tokens: 6000, // Significantly increased for comprehensive explanations
+        max_completion_tokens: 4600, // Significantly increased for comprehensive explanations
         presence_penalty: 0.1,
         frequency_penalty: 0.1,
         response_format: { type: "text" }

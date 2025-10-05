@@ -1157,7 +1157,7 @@ app.get("/debug/openai-status", async (req, res) => {
       messages: [
         { role: "user", content: "Say 'API test successful'" }
       ],
-      max_completion_tokens: 20
+      max_completion_tokens: 40
     })
 
     res.json({

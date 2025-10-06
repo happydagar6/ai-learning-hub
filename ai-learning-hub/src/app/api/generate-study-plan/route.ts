@@ -480,6 +480,19 @@ export const DELETE = requireAuth(async (request: NextRequest, user: any) => {
       return NextResponse.json({ error: "Study plan ID is required" }, { status: 400 })
     }
 
+    // First, delete any associated mind maps
+    const { error: mindMapError } = await supabase
+      .from("mind_maps")
+      .delete()
+      .eq("study_plan_id", planId)
+      .eq("user_id", user.id)
+
+    if (mindMapError) {
+      console.warn("⚠️ Warning deleting associated mind maps:", mindMapError)
+      // Continue with study plan deletion even if mind map deletion fails
+    }
+
+    // Then delete the study plan
     const { error } = await supabase.from("study_plans").delete().eq("id", planId).eq("user_id", user.id)
 
     if (error) {
@@ -489,7 +502,7 @@ export const DELETE = requireAuth(async (request: NextRequest, user: any) => {
 
     return NextResponse.json({
       success: true,
-      message: "Study plan deleted successfully",
+      message: "Study plan and associated mind maps deleted successfully",
     })
   } catch (error) {
     console.error("❌ DELETE study plan error:", error)
